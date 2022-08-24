@@ -3,26 +3,23 @@
 require("dotenv").config();
 
 const chalk = require("chalk");
+const { loadUser } = require("../auth-utils");
+const { fetchItems } = require("../fetch-utils");
 const prompt = require("prompt-sync")();
-const fetch = require("cross-fetch");
 
-console.log(chalk.bold.underline.cyan("Welcome to your To Do List"));
-const email = prompt(chalk.blue("What is your email? "));
-const password = prompt.hide(chalk.red("What is your password? "));
+async function loadPrompts() {
+  console.log(chalk.bold.underline.cyan("Welcome to your To Do List"));
+  // const email = prompt(chalk.blue("What is your email? "));
+  // const password = prompt.hide(chalk.red("What is your password? "));
 
-console.log({ email, password });
-loadUser(email, password);
-
-async function loadUser(email, password) {
-  const resp = await fetch(`${process.env.API_URL}/api/v1/users/sessions`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-    credentials: "include",
-  });
-  const data = await resp.json();
+  const [cookieInfo, user] = await loadUser("julie@example.com", "123456");
+  console.log(chalk.blue(`Welcome ${user.email}`));
+  const option = prompt(
+    chalk.cyanBright("list: list all items\n complete <n>: completes an item\n")
+  );
+  console.log(option);
+  const data = await fetchItems(cookieInfo);
   console.log(data);
 }
+
+loadPrompts();
